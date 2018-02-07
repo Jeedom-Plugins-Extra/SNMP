@@ -1,0 +1,22 @@
+= SNMP
+
+Plugin permettant de monitorer des équipements SNMP.
+
+== Description
+include::presentation.asciidoc[]
+
+'''
+== Configuration
+include::configuration.asciidoc[]
+
+'''
+== FAQ
+include::faq.asciidoc[]
+
+'''
+== Troubleshoting
+include::troubleshoting.asciidoc[]
+
+'''
+== Compatibilité
+include::compatibilite.asciidoc[]

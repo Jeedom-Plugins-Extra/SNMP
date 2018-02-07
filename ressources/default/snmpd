@@ -1,0 +1,25 @@
+#######################
+# Repertoire des MIBS #
+#######################
+export MIBDIRS=/usr/share/snmp/mibs
+
+##################
+# Controle SNMPD #
+##################
+SNMPDRUN=yes
+
+#################
+# Options SNMPD #
+#################
+SNMPDOPTS='-Lsd -Lf /dev/null -u snmp -I -smux -p /var/run/snmpd.pid'
+
+######################
+# Controle SNMPTRAPD #
+######################
+TRAPDRUN=no
+TRAPDOPTS='-Lsd -p /var/run/snmptrapd.pid'
+
+################################
+# Chemin RFC (lien symbolique) #
+################################
+SNMPDCOMPAT=yes

@@ -1,0 +1,11 @@
+{
+"id" : "SNMP",
+"name" : "SNMP",
+"licence" : "AGPL",
+"author" : "Slobberbone",
+"require" : "2.2.5",
+"category" : "monitoring",
+"hasDependency" : true,
+"hasOwnDeamon" : false,
+"maxDependancyInstallTime" : 45
+}

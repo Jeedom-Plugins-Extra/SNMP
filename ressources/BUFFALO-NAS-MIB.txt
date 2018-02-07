@@ -1,0 +1,762 @@
+BUFFALO-NAS-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    MODULE-IDENTITY, OBJECT-TYPE, NOTIFICATION-TYPE, enterprises, Integer32
+        FROM SNMPv2-SMI
+    TEXTUAL-CONVENTION, DisplayString
+        FROM SNMPv2-TC
+    buffalo FROM BUFFALO-ROOT-MIB;
+
+
+teraStation		MODULE-IDENTITY
+    LAST-UPDATED	"201111240000Z"
+    ORGANIZATION	"BUFFALO Inc."
+    CONTACT-INFO        "URI: http://buffalo.jp/products/catalog/storage/hd_lan_business.html
+			 Contact: Yukihito HARA
+			  BUFFALO Inc. 
+			  4-15 Shiabta-Hondori, Minami-ku, Nagoya city,
+			  Aichi, JAPAN"
+    DESCRIPTION		"The MIB for BUFFALO NAS.
+			(c)2009 BUFFALO Inc. All rights reserved."
+    REVISION		"201111010000Z"
+    DESCRIPTION		"revision1 : 20111101"
+    ::= { buffalo 27}
+
+
+teraStationObjects		OBJECT IDENTIFIER
+    ::= { teraStation 1 }
+
+teraStationNotifications	OBJECT IDENTIFIER
+    ::= { teraStation 2 }
+
+-- ************************************************************************
+
+-- Textual Conventions
+
+-- ************************************************************************
+
+DayOfWeek ::= TEXTUAL-CONVENTION
+    STATUS		current
+    DESCRIPTION		"The day of week."
+    SYNTAX		INTEGER {
+    			    sun(1),
+			    mon(2),
+			    tue(3),
+			    wed(4),
+			    thu(5),
+			    fri(6),
+			    sat(7)
+			}
+
+LongUTF8String ::= TEXTUAL-CONVENTION
+    DISPLAY-HINT	"255t"
+    STATUS		current
+    DESCRIPTION		"The string to use UTF8."
+    SYNTAX		OCTET STRING (SIZE (1..1024))
+
+
+-- ************************************************************************
+
+-- Objects
+
+-- ************************************************************************
+
+-- ************************************************************************
+
+-- Backup Task
+
+-- ************************************************************************
+
+nasBackupTable		OBJECT-TYPE
+    SYNTAX		SEQUENCE OF NasBackupEntry
+    MAX-ACCESS		not-accessible
+    STATUS		current
+    DESCRIPTION		"The table containing schedules of backup task."
+    ::= { teraStationObjects 1 }
+
+nasBackupEntry	OBJECT-TYPE
+    SYNTAX		NasBackupEntry
+    MAX-ACCESS		not-accessible
+    STATUS		current
+    DESCRIPTION		"An entry of nasBackupTable. Contents of entry is
+			read from file /etc/melco/backupx, and entry is
+			made at each file."
+    INDEX		{ nasBackupIndex }
+    ::= { nasBackupTable 1 }
+
+NasBackupEntry ::= SEQUENCE {
+    nasBackupIndex	Integer32,
+    nasBackupStatus	INTEGER
+}
+
+nasBackupIndex		OBJECT-TYPE
+    SYNTAX		Integer32 (1..8)
+    MAX-ACCESS		not-accessible
+    STATUS		current
+    DESCRIPTION		"The index value that uniquely identifies
+			nasBackupEntry."
+    ::= { nasBackupEntry 1 }
+
+nasBackupStatus		OBJECT-TYPE
+    SYNTAX		INTEGER {
+			    ready(1),
+			    run(2),
+			    done(3),
+			    error(4)
+			}
+    MAX-ACCESS		read-only
+    STATUS		current
+    DESCRIPTION		"The state of backup task. This value is read from
+			'status' line in file /etc/melco/backupx.
+
+    			ready(1) indicates waiting schedule.
+
+			run(2) indicates executing backup task.
+
+			done(3) indicates backup task is finished and
+			succeeded.
+
+			error(4) indicates backup task is finished and
+			failed."
+    ::= { nasBackupEntry 3 }
+
+-- ************************************************************************
+
+-- Disk Status
+
+-- ************************************************************************
+
+nasDiskTable		OBJECT-TYPE
+    SYNTAX		SEQUENCE OF NasDiskEntry
+    MAX-ACCESS		not-accessible
+    STATUS		current
+    DESCRIPTION		"The table containing information of local disks."
+    ::= { teraStationObjects 2 }
+
+nasDiskEntry		OBJECT-TYPE
+    SYNTAX		NasDiskEntry
+    MAX-ACCESS		not-accessible
+    STATUS		current
+    DESCRIPTION		"An entry of nasDiskTable. Contents of entry is read
+			from file /etc/melco/diskinfo, and entry is made at
+			each 'diskx' line."
+    INDEX		{ nasDiskIndex }
+    ::= { nasDiskTable 1 }
+
+NasDiskEntry ::= SEQUENCE {
+    nasDiskIndex	Integer32,
+    nasDiskStatus	INTEGER,
+    nasDiskCapacity	Integer32,
+    nasDiskUsed		Integer32
+}
+
+nasDiskIndex		OBJECT-TYPE
+    SYNTAX		Integer32
+    MAX-ACCESS		not-accessible
+    STATUS		current
+    DESCRIPTION		"The index value that uniquely identifies
+			nasDiskEntry."
+    ::= { nasDiskEntry 1 }
+
+nasDiskStatus		OBJECT-TYPE
+    SYNTAX		INTEGER {
+                            notSupport(-1),
+    			    normal(1),
+			    array1(2),
+			    array2(3),
+			    standby(4),
+			    degrade(5),
+			    remove(6),
+			    standbyRemoved(7),
+			    degradeRemoved(8),
+			    removeRemoved(9),
+			    array3(10),
+			    array4(11),
+			    mediaCartridge(12),
+			    array5(13),
+			    array6(14)
+			}
+    MAX-ACCESS		read-only
+    STATUS		current
+    DESCRIPTION		"The state of local disks. This value is read from
+			'diskx' line in file /etc/melco/diskinfo.
+
+                        notSupport(-1) indicates the disk slot is not exist.
+
+    			normal(1) indicates the disk is not part of RAID array.
+
+			array1(2) indicates the disk is part of array1.
+
+			array2(3) indicates the disk is part of array2.
+
+			standby(4) indicates the disk is standby and power-off.
+
+			degrade(5) indicates the disk has degraded and removed
+			from array, and power-off.
+
+			remove(6) indicates the disk has removed from array
+			by user and power-off.
+
+			standbyRemoved(7) indicates the disk is standby and
+			removed from NAS.
+
+			degradeRemoved(8) indicates the disk has degraded and
+			removed from array and NAS.
+
+			removeRemoved(9) indicates the disk has removed from
+			array and NAS.
+
+			array3(10) indicates the disk is part of array3.
+
+			array4(11) indicates the disk is part of array4.
+
+			mediaCartridge(12) indicates the disk is media 
+			cartridge.
+
+			array5(13) - array6(14) indicates the disk is part 
+                        of array5 - array6."
+    ::= { nasDiskEntry 2 }
+
+nasDiskCapacity		OBJECT-TYPE
+    SYNTAX		Integer32
+    MAX-ACCESS		read-only
+    STATUS		current
+    DESCRIPTION		"The capacity of local disk. This value is displayed
+			in gigabyte. If the disk is using for RAID array, or
+			the disk is not mounted then this display -1."
+    ::= { nasDiskEntry 3 }
+
+nasDiskUsed		OBJECT-TYPE
+    SYNTAX		Integer32 (-1..100)
+    UNITS		"%"
+    MAX-ACCESS		read-only
+    STATUS		current
+    DESCRIPTION		"The percentage of disk usage. If the disk is using
+			for RAID array, or the disk is not mounted then this
+			display -1."
+    ::= { nasDiskEntry 4 }
+
+
+-- ************************************************************************
+
+-- Array Status
+
+-- ************************************************************************
+
+nasArrayTable		OBJECT-TYPE
+    SYNTAX		SEQUENCE OF NasArrayEntry
+    MAX-ACCESS		not-accessible
+    STATUS		current
+    DESCRIPTION		"The table containing information of RAID array."
+    ::= { teraStationObjects 3 }
+
+nasArrayEntry		OBJECT-TYPE
+    SYNTAX		NasArrayEntry
+    MAX-ACCESS		not-accessible
+    STATUS		current
+    DESCRIPTION		"An entry of nasArrayTable. Contents of entry is
+			read from file /etc/melco/diskinfo, and entry is made
+			at each 'arrayx' line."
+    INDEX		{ nasArrayIndex }
+    ::= { nasArrayTable 1 }
+
+NasArrayEntry ::= SEQUENCE {
+    nasArrayIndex	Integer32,
+    nasArrayStatus	INTEGER,
+    nasArrayCapacity	Integer32,
+    nasArrayUsed	Integer32
+}
+
+nasArrayIndex		OBJECT-TYPE
+    SYNTAX		Integer32
+    MAX-ACCESS		not-accessible
+    STATUS		current
+    DESCRIPTION		"The index value that uniquely identifies
+			nasArrayEntry."
+    ::= { nasArrayEntry 1 }
+
+nasArrayStatus		OBJECT-TYPE
+    SYNTAX		INTEGER {
+                            notSupport(-1),
+    			    off(1),
+			    raid0(2),
+			    raid1(3),
+			    raid5(4),
+			    raid6(5),
+			    raid10(6),
+			    raid50(7),
+			    raid51(8),
+			    raid60(9),
+			    raid61(10)
+			}
+    MAX-ACCESS		read-only
+    STATUS		current
+    DESCRIPTION		"Ths state of RAID array. This value is read from
+			'arrayx' line in file /etc/melco/diskinfo.
+
+                        NotSupport(-1) indicates the RAID array is not support.
+
+			off(1) indicates the RAID array is not made.
+
+			raid0(2) indicates the RAID array is made as raid0.
+
+			raid1(3) indicates the RAID array is made as raid1.
+
+			raid5(4) indicates the RAID array is made as raid5.
+
+			raid6(5) indicates the RAID array is made as raid6.
+
+			raid10(6) indicates the RAID array is made as raid10.
+			raid50(7) indicates the RAID array is made as raid50.
+			raid51(8) indicates the RAID array is made as raid51.
+			raid60(9) indicates the RAID array is made as raid60.
+			raid61(10) indicates the RAID array is made as raid61.
+			"
+    ::= { nasArrayEntry 2 }
+
+nasArrayCapacity	OBJECT-TYPE
+    SYNTAX		Integer32
+    MAX-ACCESS		read-only
+    STATUS		current
+    DESCRIPTION		"The capacity of RAID array. This value is displayed
+			in gigabyte. If the RAID array is not made, or the
+			RAID array is not mounted then this display -1."
+    ::= { nasArrayEntry 3 }
+
+nasArrayUsed		OBJECT-TYPE
+    SYNTAX		Integer32 (-1..100)
+    UNITS		"%"
+    MAX-ACCESS		read-only
+    STATUS		current
+    DESCRIPTION		"The percentage of RAID array usage. If the RAID array
+			is not made, or the RAID array is not mounted then
+			this display -1."
+    ::= { nasArrayEntry 4 }
+
+
+-- ************************************************************************
+
+-- Errors
+
+-- ************************************************************************
+
+nasErrorTable		OBJECT-TYPE
+    SYNTAX		SEQUENCE OF NasErrorEntry
+    MAX-ACCESS		not-accessible
+    STATUS		current
+    DESCRIPTION		"The table containing error that occurred on NAS."
+    ::= { teraStationObjects 4 }
+
+nasErrorEntry		OBJECT-TYPE
+    SYNTAX		NasErrorEntry
+    MAX-ACCESS		not-accessible
+    STATUS		current
+    DESCRIPTION		"An entry of nasErrorTable. Contents of entry is read
+			from file /tmp/error_status."
+    INDEX		{ nasErrorIndex }
+    ::= { nasErrorTable 1 }
+
+NasErrorEntry ::= SEQUENCE {
+    nasErrorIndex	Integer32,
+    nasErrorMsg		DisplayString,
+    nasErrorDate	DisplayString
+}
+
+nasErrorIndex		OBJECT-TYPE
+    SYNTAX		Integer32 (1..99)
+    MAX-ACCESS		not-accessible
+    STATUS		current
+    DESCRIPTION		"The index value that uniquely identifies
+			nasErrorEntry."
+    ::= { nasErrorEntry 1 }
+
+nasErrorMsg		OBJECT-TYPE
+    SYNTAX		DisplayString
+    MAX-ACCESS		read-only
+    STATUS		current
+    DESCRIPTION		"The detail of occurred error."
+    ::= { nasErrorEntry 2 }
+
+nasErrorDate		OBJECT-TYPE
+    SYNTAX		DisplayString
+    MAX-ACCESS		read-only
+    STATUS		current
+    DESCRIPTION		"The date that error occurred."
+    ::= { nasErrorEntry 3 }
+
+-- ************************************************************************
+
+-- Informations
+
+-- ************************************************************************
+
+nasInformationTable	OBJECT-TYPE
+    SYNTAX		SEQUENCE OF NasInformationEntry
+    MAX-ACCESS		not-accessible
+    STATUS		current
+    DESCRIPTION		"The table containing information that occurred on
+			NAS."
+    ::= { teraStationObjects 5 }
+
+nasInformationEntry	OBJECT-TYPE
+    SYNTAX		NasInformationEntry
+    MAX-ACCESS		not-accessible
+    STATUS		current
+    DESCRIPTION		"An entry of nasInformationTable. Contents of entry is
+			read from file /tmp/info_status."
+    INDEX		{ nasInformationIndex }
+    ::= { nasInformationTable 1 }
+
+NasInformationEntry ::= SEQUENCE {
+    nasInformationIndex	Integer32,
+    nasInformationMsg	DisplayString,
+    nasInformationDate	DisplayString
+}
+
+nasInformationIndex	OBJECT-TYPE
+    SYNTAX		Integer32 (1..99)
+    MAX-ACCESS		not-accessible
+    STATUS		current
+    DESCRIPTION		"The index value that uniquely identifies
+			nasInformationTable."
+    ::= { nasInformationEntry 1 }
+
+nasInformationMsg	OBJECT-TYPE
+    SYNTAX		DisplayString
+    MAX-ACCESS		read-only
+    STATUS		current
+    DESCRIPTION		"The detail of occurred information."
+    ::= { nasInformationEntry 2 }
+
+nasInformationDate	OBJECT-TYPE
+    SYNTAX		DisplayString
+    MAX-ACCESS		read-only
+    STATUS		current
+    DESCRIPTION		"The date that information occurred."
+    ::= { nasInformationEntry 3 }
+
+-- ************************************************************************
+
+-- LVM
+
+-- ************************************************************************
+
+nasLVMParams	OBJECT IDENTIFIER ::= { teraStationObjects 6 }
+
+nasVGTable		OBJECT-TYPE
+    SYNTAX		SEQUENCE OF NasVGEntry
+    MAX-ACCESS		not-accessible
+    STATUS		current
+    DESCRIPTION		"The table containing information of VolumeGroup."
+    ::= { nasLVMParams 1 }
+
+nasVGEntry		OBJECT-TYPE
+    SYNTAX		NasVGEntry
+    MAX-ACCESS		not-accessible
+    STATUS		current
+    DESCRIPTION		"An entry of nasVGTable."
+    INDEX		{ nasVGIndex }
+    ::= { nasVGTable 1 }
+
+NasVGEntry ::= SEQUENCE {
+    nasVGIndex		Integer32,
+    nasVGPESize		Integer32,
+    nasVGPETotal	Integer32,
+    nasVGPEUsed		Integer32,
+    nasLVTable		Integer32,
+    nasPVTable		Integer32
+}
+
+nasVGIndex		OBJECT-TYPE
+    SYNTAX		Integer32
+    MAX-ACCESS		not-accessible
+    STATUS		current
+    DESCRIPTION		"The index value that uniquely identifies nasVGEntry."
+    ::= { nasVGEntry 1 }
+
+nasVGPESize		OBJECT-TYPE
+    SYNTAX		Integer32
+    UNITS		"GB"
+    MAX-ACCESS		read-only
+    STATUS		current
+    DESCRIPTION		"The size of VolumeGroup's Physical Extent."
+    ::= { nasVGEntry 2 }
+
+nasVGPETotal		OBJECT-TYPE
+    SYNTAX		Integer32
+    MAX-ACCESS		read-only
+    STATUS		current
+    DESCRIPTION		"The total count of Physical Extent."
+    ::= { nasVGEntry 3 }
+
+nasVGPEUsed		OBJECT-TYPE
+    SYNTAX		Integer32
+    MAX-ACCESS		read-only
+    STATUS		current
+    DESCRIPTION		"The used count of Physical Extent."
+    ::= { nasVGEntry 4 }
+
+nasLVTable		OBJECT-TYPE
+    SYNTAX		SEQUENCE OF NasLVEntry
+    MAX-ACCESS		not-accessible
+    STATUS		current
+    DESCRIPTION		"The table containing information of VolumeGroup's
+    			LogicalVolume."
+    ::= { nasVGEntry 5 }
+
+nasLVEntry		OBJECT-TYPE
+    SYNTAX		NasLVEntry
+    MAX-ACCESS		not-accessible
+    STATUS		current
+    DESCRIPTION		"An entry of nasLVTable."
+    INDEX		{ nasVGIndex, nasLVIndex }
+    ::= { nasLVTable 1 }
+
+NasLVEntry ::= SEQUENCE {
+    nasLVIndex		Integer32,
+    nasLVName		DisplayString,
+    nasLVCapacity	Integer32,
+    nasLVUsed		Integer32
+}
+
+nasLVIndex		OBJECT-TYPE
+    SYNTAX		Integer32 (1..32)
+    MAX-ACCESS		not-accessible
+    STATUS		current
+    DESCRIPTION		"The index value that uniquely identifies nasLVEntry."
+    ::= { nasLVEntry 1 }
+
+nasLVName		OBJECT-TYPE
+    SYNTAX		DisplayString
+    MAX-ACCESS		read-only
+    STATUS		current
+    DESCRIPTION		"The name of LogicalVolume."
+    ::= { nasLVEntry 2 }
+
+nasLVCapacity		OBJECT-TYPE
+    SYNTAX		Integer32
+    MAX-ACCESS		read-only
+    STATUS		current
+    DESCRIPTION		"The capacity of LogicalVolume."
+    ::= { nasLVEntry 3 }
+
+nasLVUsed		OBJECT-TYPE
+    SYNTAX		Integer32 (-1..100)
+    UNITS		"%"
+    MAX-ACCESS		read-only
+    STATUS		current
+    DESCRIPTION		"The Percentage of LogicalVolume using."
+    ::= { nasLVEntry 4 }
+
+nasPVTable		OBJECT-TYPE
+    SYNTAX		SEQUENCE OF NasPVEntry
+    MAX-ACCESS		not-accessible
+    STATUS		current
+    DESCRIPTION		"The table containing information of VolumeGroup's
+    			PhisycalVolume."
+    ::= { nasVGEntry 6 }
+
+nasPVEntry		OBJECT-TYPE
+    SYNTAX		NasPVEntry
+    MAX-ACCESS		not-accessible
+    STATUS		current
+    DESCRIPTION		"An entry of nasPVTable."
+    INDEX		{ nasVGIndex, nasPVIndex }
+    ::= { nasPVTable 1 }
+
+NasPVEntry ::= SEQUENCE {
+    nasPVIndex		Integer32,
+    nasPVName		DisplayString
+}
+
+nasPVIndex		OBJECT-TYPE
+    SYNTAX		Integer32
+    MAX-ACCESS		not-accessible
+    STATUS		current
+    DESCRIPTION		"The index value that uniquely identifies nasPVEntry."
+    ::= { nasPVEntry 1 }
+
+nasPVName		OBJECT-TYPE
+    SYNTAX		DisplayString
+    MAX-ACCESS		read-only
+    STATUS		current
+    DESCRIPTION		"The name of PhysicalVolume."
+    ::= { nasPVEntry 2 }
+    
+-- ************************************************************************
+
+-- Failover
+
+-- ************************************************************************
+nasFailoverParams	OBJECT IDENTIFIER ::= { teraStationObjects 7 }
+
+nasFailoverRole		OBJECT-TYPE
+    SYNTAX		INTEGER {
+    			    standalone(1),
+			    main(2),
+			    aloneMain(4),
+			    backup(8),
+			    aloneBackup(16),
+			    maintenanceMain(32),
+			    maintenanceBackup(64),
+			    emMode(128)
+    			}
+    MAX-ACCESS		read-only
+    STATUS		current
+    DESCRIPTION		"The role of NAS in failover."
+    ::= { nasFailoverParams 1 }
+
+nasFailoverStatus	OBJECT-TYPE
+    SYNTAX		INTEGER {
+    			    idle(0),
+			    busy(1),
+			    startingMain(2),
+			    startingBackup(3),
+    			    initializing(4),
+			    stopping(32)
+    			}
+    MAX-ACCESS		read-only
+    STATUS		current
+    DESCRIPTION		"The state of failover."
+    ::= { nasFailoverParams 2 }
+
+nasFailoverPartner	OBJECT-TYPE
+    SYNTAX		IpAddress
+    MAX-ACCESS		read-only
+    STATUS		current
+    DESCRIPTION		"The partner's IP address in failover."
+    ::= { nasFailoverParams 3 }
+
+-- ************************************************************************
+
+-- RPSU
+
+-- ************************************************************************
+nasRPSUTable		OBJECT-TYPE
+    SYNTAX		SEQUENCE OF NasRpsuEntry
+    MAX-ACCESS		not-accessible
+    STATUS		current
+    DESCRIPTION		"The table containing information of RPSUs
+    			(Redudant Power Supply Unit)."
+    ::= { teraStationObjects 8 }
+
+nasRPSUEntry		OBJECT-TYPE
+    SYNTAX		NasRpsuEntry
+    MAX-ACCESS		not-accessible
+    STATUS		current
+    DESCRIPTION		"An entry of nasRPSUTable. Contents of entry is read
+			from miconapl, and entry is made at
+			each 'rpsux' line."
+    INDEX		{ nasRPSUIndex }
+    ::= { nasRPSUTable 1 }
+
+NasRpsuEntry ::= SEQUENCE {
+    nasRPSUIndex	Integer32,
+    nasRPSUStatus	INTEGER
+}
+
+nasRPSUIndex		OBJECT-TYPE
+    SYNTAX		Integer32
+    MAX-ACCESS		not-accessible
+    STATUS		current
+    DESCRIPTION		"The index value that uniquely identifies
+			nasRPSUEntry."
+    ::= { nasRPSUEntry 1 }
+
+nasRPSUStatus		OBJECT-TYPE
+    SYNTAX		INTEGER {
+                            unknown(-1),
+    			    fine(1),
+			    broken(2)
+			}
+    MAX-ACCESS		read-only
+    STATUS		current
+    DESCRIPTION		"The state of rpsus. This value is read from
+			miconapl.
+
+			unknown(-1) RPSU is unknown condition.
+    			fine(1) RPSU is fine condition.
+			broken(2) RPSU is broken."
+    ::= { nasRPSUEntry 2 }
+
+-- ************************************************************************
+
+-- iSCSI
+
+-- ************************************************************************
+
+nasISCSITable		OBJECT-TYPE
+    SYNTAX		SEQUENCE OF NasISCSIEntry
+    MAX-ACCESS		not-accessible
+    STATUS		current
+    DESCRIPTION		"The table containing information of iSCSIs
+    			(internet Small Computer System Interface)."
+    ::= { teraStationObjects 9 }
+
+nasISCSIEntry		OBJECT-TYPE
+    SYNTAX		NasISCSIEntry
+    MAX-ACCESS		not-accessible
+    STATUS		current
+    DESCRIPTION		"An entry of nasISCSIParams. Contents of entry
+					is made at each 'iSCSIx' line."
+    INDEX		{ nasISCSIIndex }
+    ::= { nasISCSITable 1 }
+
+NasISCSIEntry ::= SEQUENCE {
+    nasISCSIIndex	Integer32,
+    nasISCSIName	DisplayString,
+    nasISCSIStatus	INTEGER
+}
+
+nasISCSIIndex		OBJECT-TYPE
+    SYNTAX		Integer32
+    MAX-ACCESS		not-accessible
+    STATUS		current
+    DESCRIPTION		"The index value that uniquely identifies
+			nasISCSIEntry."
+    ::= { nasISCSIEntry 1 }
+
+nasISCSIName		OBJECT-TYPE
+    SYNTAX		DisplayString
+    MAX-ACCESS		read-only
+    STATUS		current
+    DESCRIPTION		"The name of the iSCSI volume."
+    ::= { nasISCSIEntry 2 }
+
+nasISCSIStatus		OBJECT-TYPE
+    SYNTAX		INTEGER {
+					unknown (-1),
+					connected (1),
+					standing-by (2)
+			}
+    MAX-ACCESS		read-only
+    STATUS		current
+    DESCRIPTION		"The connection state of iSCSI.
+			unknown(-1) iSCSI-Volume is under unknown condition.
+    		conncted(1) iSCSI-Volume is connected to Initiator.
+			standing-by(2) iSCSI-Volume is disconnected from Initiator."
+    ::= { nasISCSIEntry 3 }
+
+
+-- ************************************************************************
+
+-- Notifications
+
+-- ************************************************************************
+
+nasErrorOccur		NOTIFICATION-TYPE
+    OBJECTS		{ nasErrorMsg, nasErrorDate }
+    STATUS		current
+    DESCRIPTION		"A nasErrorOccur notification is sent when the value
+			of nasErrorMsg changes."
+    ::= { teraStationNotifications 1 }
+
+nasInformationOccur	NOTIFICATION-TYPE
+    OBJECTS		{ nasInformationMsg, nasInformationDate }
+    STATUS		current
+    DESCRIPTION		"A nasInformationOccur notification is sent when the
+			value of nasInformationMsg changes."
+    ::= { teraStationNotifications 2 }
+
+
+END
