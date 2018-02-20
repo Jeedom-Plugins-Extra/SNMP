@@ -1,37 +1,38 @@
-= SNMP
+Description
+===
 
-Plugin permettant de monitorer des équipements SNMP ( GNU/Linux, Microsoft Windows, NAS, etc ...)
-
-'''
-== Description
 include::presentation.md[]
 
-'''
-== Configuration
-include::configuration.md[]
+Configuration
+===
 
-'''
-== FAQ
+'''include
+./configuration.md
+
+FAQ
+===
+
 include::faq.md[]
 
-'''
-== Troubleshoting
+Troubleshoting
+===
+
 include::troubleshoting.md[]
 
-'''
-== Compatibilité
+Compatibilité
+===
+
 include::compatibilite.md[]
 
-'''
-== Market
+Market
+===
 
 Retrouvez le sur le Market Jeedom [ici](https://www.jeedom.com/market/index.php?v=d&p=market&type=plugin&&name=SNMP
 
-'''
-== Prévisualisation 
+Prévisualisation 
+===
 
-'''
-== Forum
-
+Forum
+===
 Lien vers le forum [ici](https://www.jeedom.com/forum/viewtopic.php?f=142&t=34154)
 
