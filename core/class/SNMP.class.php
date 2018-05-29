@@ -234,7 +234,7 @@ class SNMP extends eqLogic
         } else {
             throw new \Exception('Impossible de d\écompresser le zip : ' . $_path);
         }
-        $deviceFile = dirname(__FILE__) . '/../config/devices/' . $market->getLogicalId() . '.json';
+        $deviceFile = __DIR__ . '/../config/devices/' . $market->getLogicalId() . '.json';
         if (!file_exists($deviceFile)) {
             throw new \Exception(__('Echec de l\'installation. Impossible de trouver le mod\èle ', __FILE__) . $deviceFile);
         }
@@ -246,7 +246,7 @@ class SNMP extends eqLogic
 
     public static function removeFromMarket(&$market)
     {
-        $deviceFile = dirname(__FILE__) . '/../config/devices/' . $market->getLogicalId() . '.json';
+        $deviceFile = __DIR__ . '/../config/devices/' . $market->getLogicalId() . '.json';
         if (!file_exists($deviceFile)) {
             throw new \Exception(__('Echec lors de la suppression. Impossible de trouver le mod\èle ', __FILE__) . $deviceFile);
         }
@@ -268,8 +268,6 @@ class SNMP extends eqLogic
 
 class SNMPCmd extends cmd
 {
-    /*     * *********************Methode d'instance************************* */
-
     public function execute($options = null)
     {
 
